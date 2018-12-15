@@ -94,7 +94,6 @@ class TrainPolicy():
                 steps_in_game = 0
                 state = self.env.reset()
 
-
             if iter % (self.iterations_per_epoch * self.num_save_every_epochs) == 0:
                 self.save_model(self.epoch, mean_loss)
 
@@ -160,26 +159,20 @@ class TrainPolicy():
 
         all_q_value = torch.tensor([])
         all_state = torch.tensor([])
-        batch_size = 32
 
-        for iter in range(1,1000):
-            state, action, reward, next_state, done = self.replay_buffer.sample(batch_size)
-
-            state = Variable(torch.FloatTensor(np.float32(state)))
-            next_state = Variable(torch.FloatTensor(np.float32(next_state)), volatile=True)
-            action = Variable(torch.LongTensor(action))
-            reward = Variable(torch.FloatTensor(reward))
-            done = Variable(torch.FloatTensor(done))
-
-            q_values = self.model(state)
+        for iter in range(1,10000):
+            state = self.env.observation_space.sample()
+            action = self.model.act(state, epsilon=0)
+            next_state, reward, done, _ = self.env.step(action)
+            #q_values = self.model(state)
             next_q_values = self.model(next_state)
-
-            q_value = q_values.gather(1, action.unsqueeze(1)).squeeze(1)
+            #q_value = q_values.gather(1, action.unsqueeze(1)).squeeze(1)
             next_q_value = next_q_values.max(1)[0]
             expected_q_value = reward + self.gamma * next_q_value * (1 - done)
 
             all_q_value = torch.cat([all_q_value, expected_q_value])
             all_state = torch.cat([all_state, state])
+
 
         plt.scatter(all_state.detach().numpy(), all_q_value.detach().numpy())
         plt.show()
@@ -196,4 +189,5 @@ if __name__=="__main__":
     train_policy = TrainPolicy(env, model, device)
     train_policy.train()
 
+    train_policy.plot_value_function()
 
