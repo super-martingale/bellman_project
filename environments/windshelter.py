@@ -9,10 +9,14 @@ from env_utils.discrete_list import DiscreteValueList
 
 class Windshelter(gym.Env):
     def __init__(self, A=1., B=0.3, D=0.3, threshold_shelter=0.5, reward_func=None):
-        self.A = torch.tensor(A).type(torch.FloatTensor)
-        self.B = torch.tensor(B).type(torch.FloatTensor)
-        self.D = torch.tensor(D).type(torch.FloatTensor)
-        self.threshold_shelter = torch.tensor(threshold_shelter).type(torch.FloatTensor)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        #dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
+
+        self.dtype = torch.float
+        self.A = torch.tensor(A, device=self.device, dtype=self.dtype)
+        self.B = torch.tensor(B, device=self.device, dtype=self.dtype)
+        self.D = torch.tensor(D, device=self.device, dtype=self.dtype)
+        self.threshold_shelter = torch.tensor(threshold_shelter, device=self.device, dtype=self.dtype)
         self.state = self.sample_init_state(state_size=1)
         if reward_func == None:
             self.get_reward = self._get_reward
@@ -20,14 +24,14 @@ class Windshelter(gym.Env):
             self.get_reward = reward_func
 
         self.game_endpoint = 1
-        self.action_space = DiscreteValueList([torch.tensor(0.),torch.tensor(1.)])
+        self.action_space = DiscreteValueList([torch.tensor(0., device=self.device, dtype=self.dtype),torch.tensor(1., device=self.device, dtype=self.dtype)])
         self.observation_space = spaces.Box(low=-2*self.game_endpoint, high= 2*self.game_endpoint, shape=(1,1), dtype=float)
         self._seed()
 
 
 
     def sample_init_state(self, state_size):
-        z = Variable(torch.rand(state_size))
+        z = torch.rand(state_size, device=self.device, dtype= self.dtype)
         return z
 
     def sample_env(self, s, a):
@@ -61,7 +65,7 @@ class Windshelter(gym.Env):
         assert self.action_space.contains(a), "%r (%s) invalid"%(a, type(a))
         if a == 0:
             a = -1
-        D_val = Variable(self.D * (torch.abs(self.state) > self.threshold_shelter).type(torch.FloatTensor))
+        D_val = self.D * (torch.abs(self.state) > self.threshold_shelter).type(self.dtype)
         w_D_val = D_val * torch.randn(1)
         next_state = self.A * self.state + self.B * a + w_D_val
         self.state = next_state

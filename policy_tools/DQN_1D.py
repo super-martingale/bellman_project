@@ -5,12 +5,18 @@ from torch.autograd import Variable
 
 import random, math
 
+from project_utils.gen_utils import GenUtils
+
+device = GenUtils.get_device()
+
 
 class DQN_1D(nn.Module):
 
     def __init__(self, env):
         super(DQN_1D, self).__init__()
 
+        self.dtype = torch.float
+        self.device = device
 
         self.input = torch.tensor(env.observation_space.shape[0])
         self.output = env.action_space.n
@@ -33,13 +39,13 @@ class DQN_1D(nn.Module):
     def act(self, state, epsilon):
         assert state.shape == torch.tensor([self.input]).shape, 'State is not of the correct shape'
         if random.random() > epsilon:
-            state = Variable(torch.FloatTensor(state).unsqueeze(0), volatile=True)
+            state = Variable(torch.tensor(state, device=self.device, dtype=self.dtype).unsqueeze(0))
             q_value = self.forward(state)
-            action = q_value.max(1)[1].data[0].type(torch.FloatTensor)
+            action = q_value.max(1)[1].type(self.dtype) #.type(torch.FloatTensor).to(device)
         else:
-            action = torch.tensor(random.randrange(self.output)).type(torch.FloatTensor)
+            action = torch.tensor(random.randrange(self.output), device=self.device, dtype=self.dtype) #.type(torch.FloatTensor).to(device)
             #print(action)
-        return action
+        return action #.type(torch.FloatTensor).to(self.device)
 
 
     def print_model(self):

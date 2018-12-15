@@ -3,7 +3,7 @@ from torch import nn
 from torch.nn import functional as F
 from torch.autograd import Variable
 from torch import autograd
-from const import EPSILON
+from wgan_gp.const import EPSILON
 
 
 class Critic(nn.Module):

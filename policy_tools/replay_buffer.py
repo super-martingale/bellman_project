@@ -6,8 +6,13 @@ from collections import deque
 class ReplayBuffer(object):
     def __init__(self, capacity):
         self.buffer = deque(maxlen=capacity)
+        self.capacity = capacity
 
     def push(self, state, action, reward, next_state, done):
+        state = state.to('cpu')
+        action = action.to('cpu')
+        #reward = reward.to('cpu')
+        next_state = next_state.to('cpu')
         state = np.expand_dims(state, 0)
         next_state = np.expand_dims(next_state, 0)
 
@@ -19,3 +24,7 @@ class ReplayBuffer(object):
 
     def __len__(self):
         return len(self.buffer)
+
+    def is_full(self):
+        return len(self.buffer) == self.capacity
+

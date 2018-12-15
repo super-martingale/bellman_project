@@ -9,9 +9,18 @@ import os
 from policy_tools.replay_buffer import ReplayBuffer
 from policy_tools.DQN_1D import DQN_1D
 from environments.env_factory import EnvFactory
+from project_utils.gen_utils import GenUtils
 
-class TrainPolicy():
-    def __init__(self, env, model, device, load_pretrained_model=True, SAVE_DIR=None, use_ipython=False):
+device = GenUtils.get_device()
+GenUtils.set_device_config()
+
+
+class PolicyWrapper():
+    '''
+    PlicyWrapper recieves a policy network and an gym environment.
+    It supports actions such as train policy network, plot value function, create replay buffer, compute loss
+    '''
+    def __init__(self, env, model, load_pretrained_model=True, SAVE_DIR=None, use_ipython=False):
         self.use_ipython = use_ipython
 
         self.env = env
@@ -50,9 +59,10 @@ class TrainPolicy():
 
         self.replay_buffer = ReplayBuffer(replay_capacity)
 
-    def train(self):
-        num_iterations = 1400000
-        batch_size = 32
+
+    def train(self, num_iterations = 1400000):
+
+        batch_size = 256
         game_number = 0
         steps_in_game = 0
         losses = []
@@ -60,6 +70,7 @@ class TrainPolicy():
         episode_reward = 0
 
         state = self.env.reset()
+        state.to(device)
         for iter in range(1, num_iterations + 1):
             epsilon = self.epsilon_by_frame(iter)
             action = self.model.act(state, epsilon)
@@ -80,11 +91,11 @@ class TrainPolicy():
 
             if len(self.replay_buffer) > self.init_pull_from_replay:
                 loss = self.compute_td_loss(batch_size)
-                losses.append(loss.data[0])
+                losses.append(loss.data)
 
             if iter % self.iterations_per_epoch == 0:
                 mean_loss = torch.mean(torch.stack(losses))
-                self.plot(iter, all_rewards, losses, mean_loss)
+                self.plot(iter, all_rewards, losses, mean_loss.to('cpu'))
                 self.epoch += 1
 
                 all_rewards = []
@@ -100,18 +111,18 @@ class TrainPolicy():
     def compute_td_loss(self, batch_size):
         state, action, reward, next_state, done = self.replay_buffer.sample(batch_size)
 
-        state = Variable(torch.FloatTensor(np.float32(state)))
-        next_state = Variable(torch.FloatTensor(np.float32(next_state)), volatile=True)
-        action = Variable(torch.LongTensor(action))
-        reward = Variable(torch.FloatTensor(reward))
-        done = Variable(torch.FloatTensor(done))
+        state = Variable(torch.tensor(np.float32(state)).to(device))
+        next_state = Variable(torch.tensor(np.float32(next_state)).to(device))
+        action = Variable(torch.LongTensor(action).to(device))
+        reward = Variable(torch.tensor(reward).to(device))
+        done = Variable(torch.tensor(done).to(device))
 
         q_values = self.model(state)
         next_q_values = self.model(next_state)
 
         q_value = q_values.gather(1, action.unsqueeze(1)).squeeze(1)
         next_q_value = next_q_values.max(1)[0]
-        expected_q_value = reward + self.gamma * next_q_value * (1 - done)
+        expected_q_value = reward.type(torch.float) + self.gamma * next_q_value * (1 - done).type(torch.float)
 
         loss = (q_value - Variable(expected_q_value.data)).pow(2).mean()
 
@@ -137,6 +148,22 @@ class TrainPolicy():
             plt.show()
         else:
             plt.savefig(os.path.join(self.SAVE_DIR, 'figures', 'iter'+str(iter)+'__loss'+str(int(mean_loss.data.numpy()))))
+
+    def generate_replay_buffer(self, capacity):
+        replay_buffer = ReplayBuffer(capacity)
+
+        state = self.env.reset()
+        state.to(device)
+
+        while not replay_buffer.is_full():
+            action = self.model.act(state, epsilon=0)
+            next_state, reward, done, _ = self.env.step(action)
+            self.replay_buffer.push(state, action, reward, next_state, done)
+            if done:
+                state = self.env.reset()
+
+        return replay_buffer
+
 
     def save_model(self, epoch, loss):
         torch.save({
@@ -179,14 +206,13 @@ class TrainPolicy():
 
 if __name__=="__main__":
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     environment_name = 'windshelter'
     env = EnvFactory.get_env(name=environment_name)
 
     model = DQN_1D(env)
 
-    train_policy = TrainPolicy(env, model, device)
+    train_policy = PolicyWrapper(env, model)
     train_policy.train()
 
     train_policy.plot_value_function()
