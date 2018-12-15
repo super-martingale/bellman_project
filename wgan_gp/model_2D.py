@@ -38,7 +38,7 @@ class Critic(nn.Module):
         x = F.leaky_relu(self.conv2(x))
         x = F.leaky_relu(self.conv3(x))
         x = F.leaky_relu(self.conv4(x))
-        x = x.view(-1, (self.image_size//8)**2 * self.channel_size*4)  #TODO: check if there is no error in the calculation of the reshape opp. Cause it doesn't sum to batch size
+        x = x.view(-1, (self.image_size//8)**2 * self.channel_size*4)
         return self.fc(x)
 
 
@@ -85,10 +85,10 @@ class Generator(nn.Module):
         g = F.relu(self.bn2(self.deconv2(g)))
         g = F.relu(self.bn3(self.deconv3(g)))
         g = self.deconv4(g)
-        return F.sigmoid(g)
+        return torch.sigmoid(g)
 
 
-class WGAN(nn.Module):
+class WGAN_2D(nn.Module):
     def __init__(self, label, z_size,
                  image_size, image_channel_size,
                  c_channel_size, g_channel_size):

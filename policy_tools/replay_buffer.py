@@ -1,14 +1,15 @@
 import random
 import numpy as np
 
+from torch.utils.data import Dataset
 from collections import deque
 
-class ReplayBuffer(object):
+class ReplayBuffer(Dataset):
     def __init__(self, capacity):
         self.buffer = deque(maxlen=capacity)
         self.capacity = capacity
 
-    def push(self, state, action, reward, next_state, done):
+    def push(self, state, action, reward, next_state, done, next_action=None):
         state = state.to('cpu')
         action = action.to('cpu')
         #reward = reward.to('cpu')
@@ -16,15 +17,17 @@ class ReplayBuffer(object):
         state = np.expand_dims(state, 0)
         next_state = np.expand_dims(next_state, 0)
 
-        self.buffer.append((state, action, reward, next_state, done))
+        self.buffer.append((state, action, reward, next_state, done, next_action))
 
     def sample(self, batch_size):
-        state, action, reward, next_state, done = zip(*random.sample(self.buffer, batch_size))
-        return np.concatenate(state), action, reward, np.concatenate(next_state), done
-
-    def __len__(self):
-        return len(self.buffer)
+        state, action, reward, next_state, done, next_action = zip(*random.sample(self.buffer, batch_size))
+        return np.concatenate(state), action, reward, np.concatenate(next_state), done, next_action
 
     def is_full(self):
         return len(self.buffer) == self.capacity
 
+    def __len__(self):
+        return len(self.buffer)
+
+    def __getitem__(self, item):
+        return self.buffer[item]

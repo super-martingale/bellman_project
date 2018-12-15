@@ -3,7 +3,8 @@ import os.path
 import argparse
 import torch
 from wgan_gp.data import DATASET_CONFIGS, TRAIN_DATASETS
-from wgan_gp.model import WGAN
+from wgan_gp.model_2D import WGAN_2D
+
 from wgan_gp.train import train
 from wgan_gp import utils
 
@@ -49,7 +50,12 @@ if __name__ == '__main__':
     dataset = TRAIN_DATASETS[args.dataset]()
     dataset_config = DATASET_CONFIGS[args.dataset]
 
-    wgan = WGAN(
+    # if args.WGAN_version == 'WGAN_1D':
+    #     wgan = WGAN_1D(
+    #         z_size=1
+    #     )
+
+    wgan = WGAN_2D(
         label=args.dataset,
         z_size=args.z_size,
         image_size=dataset_config['size'],

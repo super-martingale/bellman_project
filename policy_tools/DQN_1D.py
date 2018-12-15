@@ -44,8 +44,7 @@ class DQN_1D(nn.Module):
             action = q_value.max(1)[1].type(self.dtype) #.type(torch.FloatTensor).to(device)
         else:
             action = torch.tensor(random.randrange(self.output), device=self.device, dtype=self.dtype) #.type(torch.FloatTensor).to(device)
-            #print(action)
-        return action #.type(torch.FloatTensor).to(self.device)
+        return action
 
 
     def print_model(self):

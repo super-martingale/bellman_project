@@ -92,6 +92,6 @@ def gaussian_intiailize(model, std=.01):
 
     for p in parameters:
         if p.dim() >= 2:
-            init.normal(p, std=std)
+            init.normal_(p, std=std)
         else:
-            init.constant(p, 0)
+            init.constant_(p, 0)

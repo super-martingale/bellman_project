@@ -25,14 +25,14 @@ _CIFAR_TEST_TRANSFORMS = [
 
 _SHVN_IMAGE_SIZE = 32
 _SHVN_TRAIN_TRANSFORMS = _SHVN_TEST_TRANSFORMS = [
-    transforms.Scale(_SHVN_IMAGE_SIZE),
+    transforms.Resize(_SHVN_IMAGE_SIZE),
     transforms.CenterCrop(_SHVN_IMAGE_SIZE),
     transforms.ToTensor(),
 ]
 
 _LSUN_IMAGE_SIZE = 64
 _LSUN_TRAIN_TRANSFORMS = _LSUN_TEST_TRANSFORMS = [
-    transforms.Scale(_LSUN_IMAGE_SIZE),
+    transforms.Resize(_LSUN_IMAGE_SIZE),
     transforms.CenterCrop(_LSUN_IMAGE_SIZE),
     transforms.ToTensor(),
 ]

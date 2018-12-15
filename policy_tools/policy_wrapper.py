@@ -109,7 +109,7 @@ class PolicyWrapper():
                 self.save_model(self.epoch, mean_loss)
 
     def compute_td_loss(self, batch_size):
-        state, action, reward, next_state, done = self.replay_buffer.sample(batch_size)
+        state, action, reward, next_state, done, next_action = self.replay_buffer.sample(batch_size)
 
         state = Variable(torch.tensor(np.float32(state)).to(device))
         next_state = Variable(torch.tensor(np.float32(next_state)).to(device))
@@ -158,7 +158,8 @@ class PolicyWrapper():
         while not replay_buffer.is_full():
             action = self.model.act(state, epsilon=0)
             next_state, reward, done, _ = self.env.step(action)
-            self.replay_buffer.push(state, action, reward, next_state, done)
+            next_action = self.model.act(next_state, epsilon=0)
+            replay_buffer.push(state, action, reward, next_state, done, next_action)
             if done:
                 state = self.env.reset()
 

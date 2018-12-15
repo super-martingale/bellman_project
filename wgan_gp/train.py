@@ -2,15 +2,15 @@ from torch import optim
 from torch.autograd import Variable
 from tqdm import tqdm
 from wgan_gp import utils, visual
-
+from torchvision.utils import save_image
 
 def train(model, dataset, collate_fn=None,
           lr=1e-04, weight_decay=1e-04, beta1=0.5, beta2=.999, lamda=10.,
           batch_size=32, sample_size=32, epochs=10,
           d_trains_per_g_train=2,
-          checkpoint_dir='checkpoints',
+          checkpoint_dir='saved_data/WGAN_checkpoints',
           checkpoint_interval=1000,
-          image_log_interval=100,
+          image_log_interval=10,
           loss_log_interval=30,
           resume=False, cuda=False):
     # define the optimizers.
@@ -27,6 +27,8 @@ def train(model, dataset, collate_fn=None,
     model.train()
     epoch_start = 1
 
+    c_loss_history = []
+    iteration_history = []
     # load checkpoint if needed.
     if resume:
         iteration = utils.load_checkpoint(model, checkpoint_dir)
@@ -91,24 +93,27 @@ def train(model, dataset, collate_fn=None,
                 trained=batch_index*batch_size,
                 total=dataset_size,
                 progress=(100.*batch_index/dataset_batches),
-                g_loss=g_loss.data[0],
-                w_dist=-c_loss.data[0],
+                g_loss=g_loss.data,
+                w_dist=-c_loss.data,
             ))
 
+            c_loss_history.append(c_loss)
+            iteration_history.append(iteration)
+
             # send losses to the visdom server.
-            if iteration % loss_log_interval == 0:
-                visual.visualize_scalar(
-                    -c_loss.data[0],
-                    'estimated wasserstein distance between x and g',
-                    iteration=iteration,
-                    env=model.name
-                )
-                visual.visualize_scalar(
-                    g_loss.data[0],
-                    'generator loss',
-                    iteration=iteration,
-                    env=model.name
-                )
+            # if iteration % loss_log_interval == 0:
+            #     visual.visualize_scalar(
+            #         -c_loss.data,
+            #         'estimated wasserstein distance between x and g',
+            #         iteration=iteration,
+            #         env=model.name
+            #     )
+            #     visual.visualize_scalar(
+            #         g_loss.data,
+            #         'generator loss',
+            #         iteration=iteration,
+            #         env=model.name
+            #     )
 
             # send sample images to the visdom server.
             if iteration % image_log_interval == 0:
@@ -117,6 +122,7 @@ def train(model, dataset, collate_fn=None,
                     'generated samples',
                     env=model.name
                 )
+                #save_image(model.sample_image(size=1).data[0], 'WGAN_generated_image.png')
 
             # save the model at checkpoints.
             if iteration % checkpoint_interval == 0:
