@@ -6,7 +6,7 @@ from wgan_gp.data import DATASET_CONFIGS, TRAIN_DATASETS
 from wgan_gp.model_2D import WGAN_2D
 
 from wgan_gp.train import train
-from wgan_gp import utils
+from wgan_gp import wg_utils as utils
 
 parser = argparse.ArgumentParser('PyTorch Implementation of WGAN-GP')
 parser.add_argument(

@@ -13,6 +13,7 @@ class DiscreteValueList(gym.Space):
         gym.Space.__init__(self, (), np.int64)
         self.n = len(self.values)
         self.type = type(self.values[0])
+
     def sample(self):
         return self.values[gym.spaces.np_random.randint(len(self.values))]
 

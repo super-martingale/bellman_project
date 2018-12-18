@@ -18,7 +18,7 @@ class DQN_1D(nn.Module):
         self.dtype = torch.float
         self.device = device
 
-        self.input = torch.tensor(env.observation_space.shape[0])
+        self.input = env.state_dim #torch.tensor(env.observation_space.shape[0])
         self.output = env.action_space.n
 
         channels_l1 = 32
@@ -32,8 +32,9 @@ class DQN_1D(nn.Module):
     def forward(self, x):
         x = F.relu(self.layer1(x))
         x = F.relu(self.layer2(x))
-        x = x.view(x.size(0), -1) #TODO: check out 'view' function is necessery
-        output = F.softplus(self.layer3(x))
+        #x = x.view(x.size(0), -1) #TODO: check out 'view' function is necessery
+        #output = F.softplus(self.layer3(x))
+        output = self.layer3(x)
         return output
 
     def act(self, state, epsilon):
@@ -45,7 +46,6 @@ class DQN_1D(nn.Module):
         else:
             action = torch.tensor(random.randrange(self.output), device=self.device, dtype=self.dtype) #.type(torch.FloatTensor).to(device)
         return action
-
 
     def print_model(self):
         # Print model's state_dict

@@ -25,13 +25,15 @@ class Windshelter(gym.Env):
 
         self.game_endpoint = 1
         self.action_space = DiscreteValueList([torch.tensor(0., device=self.device, dtype=self.dtype),torch.tensor(1., device=self.device, dtype=self.dtype)])
-        self.observation_space = spaces.Box(low=-2*self.game_endpoint, high= 2*self.game_endpoint, shape=(1,1), dtype=float)
+        self.actions_option_num = 2
+        self.state_dim = 1
+        #self.observation_space = spaces.Box(low=-2*self.game_endpoint, high= 2*self.game_endpoint, shape=(1,1), dtype=float)
         self._seed()
 
 
 
     def sample_init_state(self, state_size):
-        z = torch.rand(state_size, device=self.device, dtype= self.dtype)
+        z = torch.rand(state_size, device=self.device, dtype= self.dtype)*2-1
         return z
 
     def sample_env(self, s, a):
@@ -47,7 +49,7 @@ class Windshelter(gym.Env):
 
     def _get_reward(self, s, a, done):
         if done:
-            reward = -10
+            reward = 0
         else:
             reward = 1
         return reward

@@ -7,12 +7,12 @@ from torch.nn import init
 import torchvision
 
 
-def get_data_loader(dataset, batch_size, cuda=False, collate_fn=None):
+def get_data_loader(dataset, batch_size, cuda=False, collate_fn=None, num_workers=0):
     collate_fn = collate_fn or default_collate
     return DataLoader(
         dataset, batch_size=batch_size,
         shuffle=True, drop_last=True, collate_fn=collate_fn,
-        **({'num_workers': 0, 'pin_memory': True} if cuda else {})
+        **({'num_workers': num_workers, 'pin_memory': False} if cuda else {})
     )
 
 

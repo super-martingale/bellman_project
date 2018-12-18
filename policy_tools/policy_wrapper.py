@@ -17,34 +17,37 @@ GenUtils.set_device_config()
 
 class PolicyWrapper():
     '''
-    PlicyWrapper recieves a policy network and an gym environment.
+    PlicyWrapper receives a policy network and an gym environment.
     It supports actions such as train policy network, plot value function, create replay buffer, compute loss
     '''
-    def __init__(self, env, model, load_pretrained_model=True, SAVE_DIR=None, use_ipython=False):
+    def __init__(self,
+                 env,
+                 model,
+                 load_pretrained_model=True,
+                 checkpoint='saved_data/checkpoints',
+                 save_data_dir='saved_data',
+                 use_ipython=False
+                 ):
         self.use_ipython = use_ipython
 
         self.env = env
         self.model = model.to(device)
         self.optimizer = optim.Adam(model.parameters())
 
-        self.iterations_per_epoch = 100000
+        self.iterations_per_epoch = 500
         self.num_save_every_epochs = 10
 
-        if SAVE_DIR is None:
-            self.SAVE_DIR = 'saved_data'
-        else:
-            self.SAVE_DIR = SAVE_DIR
+        self.save_data_dir = save_data_dir
+        self.checkpoint = checkpoint
+        assert checkpoint is not None, 'Please provide checkpoint directory'
+        if not os.path.exists(self.checkpoint):
+            os.makedirs(self.checkpoint)
+        self.SAVE_MODEL_PATH = os.path.join(self.checkpoint, self.model.name)
 
-        self.MODEL_DIR = os.path.join(self.SAVE_DIR, 'models')
-        if not os.path.exists(self.MODEL_DIR):
-            os.makedirs(self.MODEL_DIR)
-        if not os.path.exists(os.path.join(self.SAVE_DIR, 'figures')):
-            os.makedirs(os.path.join(self.SAVE_DIR, 'figures'))
+        if not os.path.exists(os.path.join(self.save_data_dir, 'figures')):
+            os.makedirs(os.path.join(self.save_data_dir, 'figures'))
 
-        self.SAVE_MODEL_PATH = os.path.join(self.MODEL_DIR, self.model.name)
         self.epoch = 1
-        if load_pretrained_model and os.path.exists(self.SAVE_MODEL_PATH):
-            self.epoch, self.loss = self.load_model()
 
 
         self.gamma = 0.99
@@ -54,15 +57,17 @@ class PolicyWrapper():
         self.epsilon_by_frame = lambda frame_idx: epsilon_final + (epsilon_start - epsilon_final) * math.exp(
             -1. * frame_idx / epsilon_decay)
 
-        self.init_pull_from_replay = 10000
         replay_capacity = 30000
+        self.init_pull_from_replay = 10000  # Iterations after which to start training from replay buffer
 
         self.replay_buffer = ReplayBuffer(replay_capacity)
 
 
-    def train(self, num_iterations = 1400000):
+    def train_model(self, num_iterations =100000, resume_trainings=True):
+        if resume_trainings and os.path.exists(self.SAVE_MODEL_PATH):
+            self.epoch, self.loss = self.load_model()
 
-        batch_size = 256
+        batch_size = 4096
         game_number = 0
         steps_in_game = 0
         losses = []
@@ -71,7 +76,7 @@ class PolicyWrapper():
 
         state = self.env.reset()
         state.to(device)
-        for iter in range(1, num_iterations + 1):
+        for iter in range(1, num_iterations + self.init_pull_from_replay):
             epsilon = self.epsilon_by_frame(iter)
             action = self.model.act(state, epsilon)
 
@@ -84,7 +89,6 @@ class PolicyWrapper():
             if done:
                 state = self.env.reset()
                 all_rewards.append(episode_reward)
-                print('done game #{}. Number of steps in game {}'.format(game_number, steps_in_game))
                 game_number += 1
                 episode_reward = 0
                 steps_in_game = 0
@@ -93,20 +97,21 @@ class PolicyWrapper():
                 loss = self.compute_td_loss(batch_size)
                 losses.append(loss.data)
 
-            if iter % self.iterations_per_epoch == 0:
-                mean_loss = torch.mean(torch.stack(losses))
-                self.plot(iter, all_rewards, losses, mean_loss.to('cpu'))
-                self.epoch += 1
+                if iter % self.iterations_per_epoch == 0:
+                    print('Finished epoch #{} . Total Iteretion {}/{}'.format(self.epoch, iter -  self.init_pull_from_replay, num_iterations))
+                    mean_loss = torch.mean(torch.stack(losses))
+                    self.plot(iter, all_rewards, losses, mean_loss.to('cpu'))
+                    self.epoch += 1
 
-                all_rewards = []
-                losses = []
+                    all_rewards = []
+                    losses = []
 
-            if steps_in_game % 1000 == 0:
-                steps_in_game = 0
-                state = self.env.reset()
+                    if self.checkpoint is not None and self.epoch % self.num_save_every_epochs == 0:
+                        self.save_model(self.epoch, mean_loss)
 
-            if iter % (self.iterations_per_epoch * self.num_save_every_epochs) == 0:
-                self.save_model(self.epoch, mean_loss)
+                if steps_in_game % 1000 == 0:
+                    steps_in_game = 0
+                    state = self.env.reset()
 
     def compute_td_loss(self, batch_size):
         state, action, reward, next_state, done, next_action = self.replay_buffer.sample(batch_size)
@@ -122,7 +127,8 @@ class PolicyWrapper():
 
         q_value = q_values.gather(1, action.unsqueeze(1)).squeeze(1)
         next_q_value = next_q_values.max(1)[0]
-        expected_q_value = reward.type(torch.float) + self.gamma * next_q_value * (1 - done).type(torch.float)
+        from policy_tools.policy_functions import bellman_opt
+        expected_q_value = bellman_opt(reward.type(torch.float), self.gamma, next_q_value, (done).type(torch.float))
 
         loss = (q_value - Variable(expected_q_value.data)).pow(2).mean()
 
@@ -147,7 +153,7 @@ class PolicyWrapper():
         if self.use_ipython:
             plt.show()
         else:
-            plt.savefig(os.path.join(self.SAVE_DIR, 'figures', 'iter'+str(iter)+'__loss'+str(int(mean_loss.data.numpy()))))
+            plt.savefig(os.path.join(self.save_data_dir, 'figures', 'iter'+str(iter)+'__loss'+str(int(mean_loss.data.numpy()))))
 
     def generate_replay_buffer(self, capacity):
         replay_buffer = ReplayBuffer(capacity)
@@ -175,6 +181,7 @@ class PolicyWrapper():
         }, self.SAVE_MODEL_PATH)
 
     def load_model(self):
+        assert os.path.exists(self.SAVE_MODEL_PATH), 'path {} does not contain DQN model'.format(self.SAVE_MODEL_PATH)
         checkpoint = torch.load(self.SAVE_MODEL_PATH)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
@@ -183,27 +190,6 @@ class PolicyWrapper():
         self.model.eval()
         return epoch, loss
 
-    def plot_value_function(self):
-
-        all_q_value = torch.tensor([])
-        all_state = torch.tensor([])
-
-        for iter in range(1,10000):
-            state = self.env.observation_space.sample()
-            action = self.model.act(state, epsilon=0)
-            next_state, reward, done, _ = self.env.step(action)
-            #q_values = self.model(state)
-            next_q_values = self.model(next_state)
-            #q_value = q_values.gather(1, action.unsqueeze(1)).squeeze(1)
-            next_q_value = next_q_values.max(1)[0]
-            expected_q_value = reward + self.gamma * next_q_value * (1 - done)
-
-            all_q_value = torch.cat([all_q_value, expected_q_value])
-            all_state = torch.cat([all_state, state])
-
-
-        plt.scatter(all_state.detach().numpy(), all_q_value.detach().numpy())
-        plt.show()
 
 if __name__=="__main__":
 
