@@ -1,25 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="192831d6-ec18-485b-9328-b33af3399cc9" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../env_utils/test_utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../policy_tools/dummy_policy.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../policy_tools/policy_functions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../train_bellmanGAN.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../env_utils/discrete_list.py" beforeDir="false" afterPath="$PROJECT_DIR$/../env_utils/discrete_list.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../environments/windshelter.py" beforeDir="false" afterPath="$PROJECT_DIR$/../environments/windshelter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../main.py" beforeDir="false" afterPath="$PROJECT_DIR$/../main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../policy_tools/DQN_1D.py" beforeDir="false" afterPath="$PROJECT_DIR$/../policy_tools/DQN_1D.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../policy_tools/policy_wrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/../policy_tools/policy_wrapper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../policy_tools/replay_buffer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../policy_tools/replay_buffer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../saved_data/figures/iter100000__loss421279.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../saved_data/figures/iter100000__loss74710.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../saved_data/models/DQN_1D-1-2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../wgan_gp/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/../wgan_gp/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../wgan_gp/model_1D.py" beforeDir="false" afterPath="$PROJECT_DIR$/../wgan_gp/model_1D.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../wgan_gp/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../wgan_gp/wg_utils.py" afterDir="false" />
-    </list>
+    <list default="true" id="192831d6-ec18-485b-9328-b33af3399cc9" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -155,8 +137,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/../wgan_gp/model_1D.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-59">
-                  <caret line="106" column="33" lean-forward="true" selection-start-line="106" selection-start-column="33" selection-end-line="106" selection-end-column="33" />
+                <state relative-caret-position="316">
+                  <caret line="131" column="30" lean-forward="true" selection-start-line="131" selection-start-column="30" selection-end-line="131" selection-end-column="30" />
                   <folding>
                     <element signature="e#0#12#0" expanded="true" />
                   </folding>
@@ -391,32 +373,6 @@
             <path>
               <item name="." type="b2602c69:ProjectViewProjectNode" />
               <item name="bellman_gan_actor_critic" type="462c0819:PsiDirectoryNode" />
-              <item name="env_utils" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="." type="b2602c69:ProjectViewProjectNode" />
-              <item name="bellman_gan_actor_critic" type="462c0819:PsiDirectoryNode" />
-              <item name="environments" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="." type="b2602c69:ProjectViewProjectNode" />
-              <item name="bellman_gan_actor_critic" type="462c0819:PsiDirectoryNode" />
-              <item name="policy_tools" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="." type="b2602c69:ProjectViewProjectNode" />
-              <item name="bellman_gan_actor_critic" type="462c0819:PsiDirectoryNode" />
-              <item name="saved_data" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="." type="b2602c69:ProjectViewProjectNode" />
-              <item name="bellman_gan_actor_critic" type="462c0819:PsiDirectoryNode" />
-              <item name="saved_data" type="462c0819:PsiDirectoryNode" />
-              <item name="checkpoints" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="." type="b2602c69:ProjectViewProjectNode" />
-              <item name="bellman_gan_actor_critic" type="462c0819:PsiDirectoryNode" />
               <item name="wgan_gp" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
@@ -643,7 +599,14 @@
       <option name="project" value="LOCAL" />
       <updated>1544915377834</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="1. Added Bellman GAN main&#10;2. transformed replay to pytorch dataset&#10;3.">
+      <created>1545154157336</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1545154157336</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -653,12 +616,12 @@
     <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.17578773" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.17578773" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3294979" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.37656903" />
+      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.37656903" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.42364016" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -1101,8 +1064,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/../wgan_gp/model_1D.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-59">
-          <caret line="106" column="33" lean-forward="true" selection-start-line="106" selection-start-column="33" selection-end-line="106" selection-end-column="33" />
+        <state relative-caret-position="316">
+          <caret line="131" column="30" lean-forward="true" selection-start-line="131" selection-start-column="30" selection-end-line="131" selection-end-column="30" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
