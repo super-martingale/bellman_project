@@ -6,6 +6,7 @@ import os
 import argparse
 
 from policy_tools.DQN_1D import DQN_1D
+from policy_tools.dummy_policy import DummyPolicy
 from environments.env_factory import EnvFactory
 from policy_tools.policy_wrapper import PolicyWrapper
 from wgan_gp.model_1D import WGAN_1D
@@ -34,8 +35,8 @@ if __name__=="__main__":
     parser.add_argument('--weight-decay', type=float, default=1e-04)
     parser.add_argument('--beta1', type=float, default=0.5)
     parser.add_argument('--beta2', type=float, default=0.9)
-    parser.add_argument('--epochs', type=int, default=2000)
-    parser.add_argument('--batch-size', type=int, default=64)
+    parser.add_argument('--epochs', type=int, default=9000)
+    parser.add_argument('--batch-size', type=int, default=1000)
     parser.add_argument('--d-trains-per-g-train', type=int, default=5)
     parser.add_argument('--sample-size', type=int, default=36)
 
@@ -62,7 +63,9 @@ if __name__=="__main__":
 
 
     env = EnvFactory.get_env(name=args.environment_name)
-    policy_net = DQN_1D(env)
+    policy_net = DQN_1D(input=env.state_dim, output=env.action_space.n)
+    #policy_net = DummyPolicy(input=env.state_dim, output=env.action_space.n)
+
     policy_wrapper = PolicyWrapper(env=env,
                                    model=policy_net,
                                    checkpoint=args.checkpoint_dir,
@@ -74,7 +77,6 @@ if __name__=="__main__":
         policy_wrapper.train_model(num_iterations =20000, resume_trainings=True)
     else:
         policy_wrapper.load_model()
-    # policy_wrapper.plot_value_function()
     print('Finished policy loading: {}'.format(policy_net.name))
 
     if not args.test:
@@ -123,6 +125,6 @@ if __name__=="__main__":
 
     print('Program finished')
 
-    test_utils.plot_value_functions(policy_wrapper, gan)
+    test_utils.plot_value_functions(policy_wrapper.model, gan, args.epochs)
 
 

@@ -16,7 +16,7 @@ def get_data_loader(dataset, batch_size, cuda=False, collate_fn=None, num_worker
     )
 
 
-def save_checkpoint(model, model_dir, iteration):
+def save_checkpoint(model, model_dir, iteration, epoch):
     path = os.path.join(model_dir, model.name)
 
     # save the checkpoint.
@@ -25,6 +25,7 @@ def save_checkpoint(model, model_dir, iteration):
     torch.save({
         'state': model.state_dict(),
         'iteration': iteration,
+        'epoch': epoch,
     }, path)
 
     # notify that we successfully saved the checkpoint.
@@ -47,7 +48,8 @@ def load_checkpoint(model, model_dir):
     # load parameters and return the checkpoint's epoch and precision.
     model.load_state_dict(checkpoint['state'])
     iteration = checkpoint['iteration']
-    return iteration
+    epoch = checkpoint['epoch']
+    return iteration, epoch
 
 
 def test_model(model, sample_size, path):

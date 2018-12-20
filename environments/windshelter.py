@@ -45,7 +45,7 @@ class Windshelter(gym.Env):
         next_state = self.A * s + self.B * a + w_D_val
         reward = self.get_reward(s, a)
         done = self._get_done(next_state)
-        return next_state, reward, done
+        return next_sta^te, reward, done
 
     def _get_reward(self, s, a, done):
         if done:

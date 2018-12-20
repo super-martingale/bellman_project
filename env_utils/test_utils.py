@@ -2,10 +2,7 @@ import torch
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_value_functions(policy_wrapper, gan_model):
-    policy_model = policy_wrapper.model
-
-
+def plot_value_functions(policy_model, gan_model, epochs):
     states = np.arange(-1., 1.0, 0.01)
     actions = [0,1]
     for action in actions:
@@ -34,19 +31,48 @@ def plot_value_functions(policy_wrapper, gan_model):
         q_dist_queue_gan = torch.cat(q_dist_queue_gan)
         states_queue = torch.cat(states_queue)
 
+        real_action = -1 if action==0 else 1
         plt.figure(action)
-        plt.title('Belman distribuiotnal reward with policy action={}'.format(action))
+        plt.title('Belman distribuiotnal reward with policy action={} Epoch #{}'.format(real_action, epochs))
         plt.scatter(states_queue_dist.to('cpu').detach().numpy(), q_dist_queue_gan.to('cpu').detach().numpy(),
                     cmap='Purples')
-        plt.savefig('saved_data/Belman distribuiotnal reward with policy action={}.png'.format(action))
+        plt.savefig('saved_data/Belman distribuiotnal reward with policy action={} epoch={}.png'.format(real_action, epochs))
 
         plt.figure(action+3)
-        plt.title('DQN Q value for policy action={}'.format(action))
+        plt.title('DQN Q value for policy action={}. Epoch #{}'.format(action, epochs))
         plt.scatter(states_queue.to('cpu').detach().numpy(), q_values_queue_policy.to('cpu').detach().numpy(),cmap='viridis')
-        plt.savefig('saved_data/DQN Q value for policy action={}.png'.format(action))
-
-
+        plt.savefig('saved_data/DQN Q value for policy action={} epoch={}.png'.format(action, epochs))
         plt.show()
+
+
+def plot_dist_reward_function(gan_model, epochs):
+    states = np.arange(-1., 1.0, 0.01)
+    actions = [0,1]
+    for action in actions:
+        q_dist_queue_gan = []
+        states_queue_dist = []
+        for state in states:
+            #Save DQN Q-value:
+            state = torch.tensor(state, dtype=torch.float).view(1,1)
+            #Save Bellman GAN Z-value:
+            sample_gan = 20
+            for sample in range(1,sample_gan):
+                z = gan_model.sample_noise(size=1)
+                dis_q = gan_model.sample_g(state.view(1,1), torch.tensor(action,dtype=torch.float).view(1,1), z)
+                q_dist_queue_gan.append(dis_q)
+                states_queue_dist.append(state)
+
+        # Plot graphs:
+        states_queue_dist = torch.cat(states_queue_dist)
+        q_dist_queue_gan = torch.cat(q_dist_queue_gan)
+
+        real_action = -1 if action==0 else 1
+        plt.figure(action)
+        plt.title('Belman distribuiotnal reward with policy action={} Epoch #{}'.format(real_action, epochs))
+        plt.scatter(states_queue_dist.to('cpu').detach().numpy(), q_dist_queue_gan.to('cpu').detach().numpy(),
+                    cmap='Purples')
+        plt.savefig('saved_data/Belman distribuiotnal reward with policy action={} epoch={}.png'.format(real_action, epochs))
+
 
 def sample_q_dist(model):
     gan_model = model

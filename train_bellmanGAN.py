@@ -1,6 +1,8 @@
 import torch
 from tqdm import tqdm
 from wgan_gp import wg_utils as utils
+from env_utils.test_utils import plot_dist_reward_function
+
 #from wgan_gp import visual
 #from torchvision.utils import save_image
 import os
@@ -10,6 +12,7 @@ def train_bellmanGAN(model, dataset, collate_fn=None,
           d_trains_per_g_train=2,
           checkpoint_dir='saved_data/BellmanWGAN_checkpoints',
           checkpoint_interval=1000,
+          plot_iterval = 1000,
           image_log_interval=10,
           loss_log_interval=30,
           resume=False, cuda=False):
@@ -31,8 +34,8 @@ def train_bellmanGAN(model, dataset, collate_fn=None,
     iteration_history = []
     # load checkpoint if needed.
     if resume and os.path.exists(os.path.join(checkpoint_dir, model.name)):
-        iteration = utils.load_checkpoint(model, checkpoint_dir)
-        epoch_start = iteration // (len(dataset) // batch_size) + 1
+        iteration, epoch_start = utils.load_checkpoint(model, checkpoint_dir)
+        #epoch_start = iteration // (len(dataset) // batch_size) + 1
 
     for epoch in range(epoch_start, epochs+1):
         data_loader = utils.get_data_loader(
@@ -73,7 +76,7 @@ def train_bellmanGAN(model, dataset, collate_fn=None,
                 z = model.sample_noise(batch_size)
                 zz = model.sample_noise(batch_size)
                 c_loss, g, g_real = model.c_loss(state, action, z, next_state, next_action, zz, reward, gamma, done, return_g=True)
-                c_loss_gp = c_loss + model.gradient_penalty(g_real, g, lamda=lamda)
+                c_loss_gp = c_loss + model.gradient_penalty(g_real, g, state, action, lamda=lamda)
                 c_loss_gp.backward()
                 critic_optimizer.step()
 
@@ -81,9 +84,7 @@ def train_bellmanGAN(model, dataset, collate_fn=None,
             generator_optimizer.zero_grad()
             z = model.sample_noise(batch_size)
             zz = model.sample_noise(batch_size)
-            g_loss= model.c_loss(state, action, z, next_state, next_action, zz, reward, gamma, done,
-                                             return_g=False)
-            #g_loss = model.g_loss(state, action, z)
+            g_loss= model.g_loss(state, action, z, next_state, next_action, zz, reward, gamma, done, return_g=False)
             g_loss.backward()
             generator_optimizer.step()
 
@@ -143,6 +144,8 @@ def train_bellmanGAN(model, dataset, collate_fn=None,
                 print('#############')
                 print()
 
-                utils.save_checkpoint(model, checkpoint_dir, iteration)
+                utils.save_checkpoint(model, checkpoint_dir, iteration, epoch)
 
                 print()
+            if iteration % plot_iterval == 0:
+                plot_dist_reward_function(model, epoch)

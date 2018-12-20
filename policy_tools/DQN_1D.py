@@ -12,14 +12,14 @@ device = GenUtils.get_device()
 
 class DQN_1D(nn.Module):
 
-    def __init__(self, env):
+    def __init__(self, input, output):
         super(DQN_1D, self).__init__()
 
         self.dtype = torch.float
         self.device = device
 
-        self.input = env.state_dim #torch.tensor(env.observation_space.shape[0])
-        self.output = env.action_space.n
+        self.input = input #torch.tensor(env.observation_space.shape[0])
+        self.output = output
 
         channels_l1 = 32
         channels_l2 = 32

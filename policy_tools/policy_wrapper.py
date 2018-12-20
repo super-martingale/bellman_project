@@ -11,6 +11,9 @@ from policy_tools.DQN_1D import DQN_1D
 from environments.env_factory import EnvFactory
 from project_utils.gen_utils import GenUtils
 
+from policy_tools.policy_functions import bellman_opt
+
+
 device = GenUtils.get_device()
 GenUtils.set_device_config()
 
@@ -50,7 +53,7 @@ class PolicyWrapper():
         self.epoch = 1
 
 
-        self.gamma = 0.99
+        self.gamma = 0.95
         epsilon_start = 1.0
         epsilon_final = 0.01
         epsilon_decay = 10000
@@ -127,7 +130,7 @@ class PolicyWrapper():
 
         q_value = q_values.gather(1, action.unsqueeze(1)).squeeze(1)
         next_q_value = next_q_values.max(1)[0]
-        from policy_tools.policy_functions import bellman_opt
+
         expected_q_value = bellman_opt(reward.type(torch.float), self.gamma, next_q_value, (done).type(torch.float))
 
         loss = (q_value - Variable(expected_q_value.data)).pow(2).mean()
@@ -197,7 +200,7 @@ if __name__=="__main__":
     environment_name = 'windshelter'
     env = EnvFactory.get_env(name=environment_name)
 
-    model = DQN_1D(env)
+    model = DQN_1D(input=env.state_dim, output=env.action_space.n)
 
     train_policy = PolicyWrapper(env, model)
     train_policy.train()
